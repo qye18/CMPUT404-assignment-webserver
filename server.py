@@ -32,6 +32,35 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
+       
+        method = self.data.decode('utf-8').split(" ")[0]
+        reqPath = self.data.decode('utf-8').split(" ")[1]
+
+        # handle methods, only GET allowed, otherwise return 405
+        if method != "GET":
+            self.request.sendall(bytearray(f"HTTP/1.1 405 Method Not Allowed\r\n",'utf-8'))
+            return
+
+        # handle end with /
+        if reqPath.endswith("/"):
+            reqPath += "index.html"
+        # correct path ending
+        elif not (reqPath.endswith("/") or reqPath.endswith(".html") or reqPath.endswith(".css")):
+            redirect_location = reqPath + "/"
+            self.request.sendall(bytearray(f"HTTP/1.1 301 Moved Permanently\r\nLocation:{redirect_location}\r\n"))
+
+        try:
+            with open("www"+reqPath,"r") as file1:
+                file_data = file1.read()
+        except:
+            # handle file not exists, return 404
+            self.request.sendall(bytearray(f"HTTP/1.1 404 Not Found\r\n",'utf-8'))
+        else:
+            # handle 200
+            if (reqPath.endswith(".html")):
+                self.request.sendall(bytearray(f"HTTP/1.1 200 OK\r\nContent-Type:text/html\r\n\n{file_data}",'utf-8'))
+            elif (reqPath.endswith(".css")):
+                self.request.sendall(bytearray(f"HTTP/1.1 200 OK\r\nContent-Type:text/css\r\n\n{file_data}",'utf-8'))
         self.request.sendall(bytearray("OK",'utf-8'))
 
 if __name__ == "__main__":
