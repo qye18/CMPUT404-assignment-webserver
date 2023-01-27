@@ -47,7 +47,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         # correct path ending
         elif not (reqPath.endswith("/") or reqPath.endswith(".html") or reqPath.endswith(".css")):
             redirect_location = reqPath + "/"
-            self.request.sendall(bytearray(f"HTTP/1.1 301 Moved Permanently\r\nLocation:{redirect_location}\r\n"))
+            self.request.sendall(bytearray(f"HTTP/1.1 301 Moved Permanently\r\nLocation:{redirect_location}\r\n",'utf-8'))
 
         try:
             with open("www"+reqPath,"r") as file1:
@@ -61,7 +61,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 self.request.sendall(bytearray(f"HTTP/1.1 200 OK\r\nContent-Type:text/html\r\n\n{file_data}",'utf-8'))
             elif (reqPath.endswith(".css")):
                 self.request.sendall(bytearray(f"HTTP/1.1 200 OK\r\nContent-Type:text/css\r\n\n{file_data}",'utf-8'))
-        self.request.sendall(bytearray("OK",'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
